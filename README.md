@@ -59,17 +59,21 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key_here
 ```
 
 3. **Database Setup**
-Ensure your Supabase database has the required tables and an admin user:
+Run the admin accounts table creation script in Supabase SQL Editor:
 
-```sql
--- Add admin role to profiles table
-ALTER TABLE profiles ADD COLUMN role TEXT DEFAULT 'user';
+```bash
+# Execute the SQL file in Supabase Dashboard
+sql/create_admin_accounts.sql
 
--- Create an admin user
-UPDATE profiles 
-SET role = 'admin' 
-WHERE email = 'your-admin-email@example.com';
+# Then run the setup script to create initial accounts
+node scripts/setup-admin.js
 ```
+
+Default admin accounts:
+- **Super Admin**: `superadmin` / `Admin@2024!`
+- **Admin**: `admin` / `Admin@2024!`
+- **Moderator**: `moderator` / `Mod@2024!`
+- **Viewer**: `viewer` / `View@2024!`
 
 4. **Start Development Server**
 ```bash
@@ -111,9 +115,12 @@ src/
 ## 🔐 Authentication & Security
 
 ### Admin Access Requirements
-- Valid Supabase account
-- `role='admin'` in the `profiles` table
-- `status='active'` account status
+- Separate admin account system (not iOS app users)
+- Four role levels:
+  - `super_admin`: Full system control
+  - `admin`: User and content management
+  - `moderator`: Content moderation only
+  - `viewer`: Read-only access
 
 ### Security Features
 - Route protection with middleware
