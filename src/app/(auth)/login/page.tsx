@@ -16,7 +16,7 @@ export default function LoginPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log('Login attempt:', { username, password })
+    console.log('Login attempt with:', { username, password })
     setLoading(true)
     setError('')
 
@@ -26,19 +26,25 @@ export default function LoginPage() {
       console.log('Login result:', result)
 
       if (!result.success) {
+        console.log('Login failed:', result.message)
         setError(result.message)
         setLoading(false)
         return
       }
 
       // 로그인 성공
-      console.log('Login successful, redirecting to dashboard...')
+      console.log('Login successful! Session:', result.session)
+      console.log('Redirecting to /dashboard...')
       setLoading(false)
-      // Force redirect with replace to avoid history issues
-      window.location.replace('/dashboard')
+      
+      // Use a small delay to ensure state updates
+      setTimeout(() => {
+        console.log('Executing redirect now...')
+        window.location.href = '/dashboard'
+      }, 100)
     } catch (err: any) {
+      console.error('Login error caught:', err)
       setError('로그인 중 오류가 발생했습니다.')
-      console.error('Login error:', err)
       setLoading(false)
     }
   }
@@ -74,7 +80,9 @@ export default function LoginPage() {
                 <User className="absolute left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
                 <input
                   id="username"
+                  name="username"
                   type="text"
+                  autoComplete="username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-white/20 focus:border-white/20 transition-all"
@@ -92,7 +100,9 @@ export default function LoginPage() {
                 <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
                 <input
                   id="password"
+                  name="password"
                   type={showPassword ? 'text' : 'password'}
+                  autoComplete="current-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full pl-12 pr-12 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-white/20 focus:border-white/20 transition-all"
