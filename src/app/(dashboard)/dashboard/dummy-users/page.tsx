@@ -60,19 +60,24 @@ export default function DummyUsersPage() {
     }
     
     setCreating(true)
+    
+    // Generate email components outside try block
+    const randomId = Math.floor(Math.random() * 100000).toString() // 5 digit number
+    const cleanNickname = newUser.nickname.toLowerCase()
+      .replace(/[^a-z0-9]/g, '') // Remove all non-alphanumeric
+      .substring(0, 10) // Limit nickname length
+    
+    // Use a simple, valid email format
+    const dummyEmail = newUser.email || `dummy${randomId}@example.com`
+    const dummyPassword = `TestPass${randomId}!`
+    
+    console.log('Creating dummy user with email:', dummyEmail) // Debug log
+    
     try {
-      // Generate unique email with shorter format
-      const randomId = Math.random().toString(36).substring(2, 8) // 6 random chars
-      const cleanNickname = newUser.nickname.toLowerCase()
-        .replace(/\s+/g, '')
-        .replace(/[^a-z0-9]/g, '')
-        .substring(0, 10) // Limit nickname length
-      const dummyEmail = newUser.email || `${cleanNickname}${randomId}@example.com`
-      
       // First, create a user in auth.users using Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: dummyEmail,
-        password: `Dummy${randomId}Pass!`, // Generate a secure dummy password
+        password: dummyPassword,
         options: {
           data: {
             nickname: newUser.nickname
@@ -107,13 +112,12 @@ export default function DummyUsersPage() {
       loadDummyUsers()
     } catch (error: any) {
       console.error('Error creating dummy user:', error)
-      console.log('Attempted email:', newUser.email || `${cleanNickname}${randomId}@example.com`) // Debug log
       
       // Handle specific error cases
-      if (error.message?.includes('invalid format') || error.message?.includes('validate email')) {
-        showMessage('error', 'Invalid email format. Please try a different nickname or provide a valid email.')
+      if (error.message?.includes('invalid') || error.message?.includes('validate')) {
+        showMessage('error', `Invalid email format. Generated email was: ${dummyEmail}`)
       } else if (error.code === '23505' || error.message?.includes('duplicate') || error.message?.includes('already registered')) {
-        showMessage('error', 'A user with this email already exists. Please use a different email.')
+        showMessage('error', 'A user with this email already exists. Please try again.')
       } else if (error.code === '23503') {
         showMessage('error', 'Failed to create user profile. Please try again.')
       } else {
