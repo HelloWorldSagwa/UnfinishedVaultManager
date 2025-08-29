@@ -68,7 +68,7 @@ export default function DummyUsersPage() {
       .substring(0, 10) // Limit nickname length
     
     // Use a simple, valid email format
-    const dummyEmail = newUser.email || `dummy${randomId}@example.com`
+    const dummyEmail = newUser.email || `dummy${randomId}@dummy.com`
     const dummyPassword = `TestPass${randomId}!`
     
     console.log('Creating dummy user with email:', dummyEmail) // Debug log

@@ -109,7 +109,7 @@ export default function ManualInputPage() {
     
     // Generate email components outside try block
     const randomId = Math.floor(Math.random() * 100000).toString() // 5 digit number
-    const dummyEmail = userForm.email || `dummy${randomId}@example.com`
+    const dummyEmail = userForm.email || `dummy${randomId}@dummy.com`
     const dummyPassword = `TestPass${randomId}!`
     
     console.log('Creating dummy user with email:', dummyEmail) // Debug log
@@ -156,7 +156,7 @@ export default function ManualInputPage() {
       
       // Handle specific error cases
       if (error.message?.includes('invalid') || error.message?.includes('validate')) {
-        showMessage('error', `Invalid email format. Generated email was: ${dummyEmail}`)
+        showMessage('error', `Invalid email format. Please check Supabase Auth settings or try a different email domain. Generated email was: ${dummyEmail}`)
       } else if (error.code === '23505' || error.message?.includes('duplicate') || error.message?.includes('already registered')) {
         showMessage('error', 'A user with this email already exists. Please try again.')
       } else if (error.code === '23503') {
