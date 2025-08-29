@@ -12,6 +12,9 @@ export default function WorksManagementPage() {
   const [loading, setLoading] = useState(true)
   const [editingLikes, setEditingLikes] = useState<{ [key: string]: number | null }>({})
   const [editingViews, setEditingViews] = useState<{ [key: string]: number | null }>({})
+  const [bulkEditMode, setBulkEditMode] = useState(false)
+  const [bulkLikesValue, setBulkLikesValue] = useState(0)
+  const [bulkViewsValue, setBulkViewsValue] = useState(0)
 
   useEffect(() => {
     loadWorks()
@@ -88,6 +91,46 @@ export default function WorksManagementPage() {
     } catch (error) {
       console.error('Error updating views:', error)
       alert('Failed to update views')
+    }
+  }
+
+  const handleBulkUpdateLikes = async () => {
+    try {
+      // Update all works in database
+      for (const work of works) {
+        await supabase
+          .from('works')
+          .update({ like_count: bulkLikesValue })
+          .eq('id', work.id)
+      }
+      
+      // Update local state
+      setWorks(works.map(work => ({ ...work, like_count: bulkLikesValue })))
+      setBulkEditMode(false)
+      alert(`Successfully updated all likes to ${bulkLikesValue}`)
+    } catch (error) {
+      console.error('Error bulk updating likes:', error)
+      alert('Failed to bulk update likes')
+    }
+  }
+
+  const handleBulkUpdateViews = async () => {
+    try {
+      // Update all works in database
+      for (const work of works) {
+        await supabase
+          .from('works')
+          .update({ view_count: bulkViewsValue })
+          .eq('id', work.id)
+      }
+      
+      // Update local state
+      setWorks(works.map(work => ({ ...work, view_count: bulkViewsValue })))
+      setBulkEditMode(false)
+      alert(`Successfully updated all views to ${bulkViewsValue}`)
+    } catch (error) {
+      console.error('Error bulk updating views:', error)
+      alert('Failed to bulk update views')
     }
   }
 
@@ -172,7 +215,7 @@ export default function WorksManagementPage() {
         
         if (isEditing) {
           return (
-            <div className="flex items-center space-x-1">
+            <div className="flex items-center space-x-2">
               <input
                 type="number"
                 value={editingLikes[work.id] || 0}
@@ -182,13 +225,13 @@ export default function WorksManagementPage() {
               />
               <button
                 onClick={() => handleUpdateLikes(work.id, editingLikes[work.id] || 0)}
-                className="text-green-600 hover:text-green-700 text-sm"
+                className="px-2 py-1 text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-900/20 rounded text-sm font-bold"
               >
                 ✓
               </button>
               <button
                 onClick={() => setEditingLikes({ ...editingLikes, [work.id]: null })}
-                className="text-red-600 hover:text-red-700 text-sm"
+                className="px-2 py-1 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded text-sm font-bold"
               >
                 ✗
               </button>
@@ -215,7 +258,7 @@ export default function WorksManagementPage() {
         
         if (isEditing) {
           return (
-            <div className="flex items-center space-x-1">
+            <div className="flex items-center space-x-2">
               <input
                 type="number"
                 value={editingViews[work.id] || 0}
@@ -225,13 +268,13 @@ export default function WorksManagementPage() {
               />
               <button
                 onClick={() => handleUpdateViews(work.id, editingViews[work.id] || 0)}
-                className="text-green-600 hover:text-green-700 text-sm"
+                className="px-2 py-1 text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-900/20 rounded text-sm font-bold"
               >
                 ✓
               </button>
               <button
                 onClick={() => setEditingViews({ ...editingViews, [work.id]: null })}
-                className="text-red-600 hover:text-red-700 text-sm"
+                className="px-2 py-1 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded text-sm font-bold"
               >
                 ✗
               </button>
@@ -312,11 +355,60 @@ export default function WorksManagementPage() {
             Manage all works in the UnfinishedVault platform
           </p>
         </div>
-        <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2">
-          <Plus className="w-4 h-4" />
-          <span>Create Work</span>
-        </button>
+        <div className="flex items-center space-x-3">
+          <button 
+            onClick={() => setBulkEditMode(!bulkEditMode)}
+            className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors flex items-center space-x-2"
+          >
+            <span>{bulkEditMode ? 'Cancel Bulk Edit' : 'Bulk Edit Stats'}</span>
+          </button>
+          <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2">
+            <Plus className="w-4 h-4" />
+            <span>Create Work</span>
+          </button>
+        </div>
       </div>
+
+      {/* Bulk Edit Panel */}
+      {bulkEditMode && (
+        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 p-4 rounded-lg">
+          <h3 className="font-semibold text-yellow-900 dark:text-yellow-300 mb-3">Bulk Edit Mode - Update All Works</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="flex items-center space-x-3">
+              <label className="font-medium text-gray-700 dark:text-gray-300">Set All Likes to:</label>
+              <input
+                type="number"
+                value={bulkLikesValue}
+                onChange={(e) => setBulkLikesValue(parseInt(e.target.value) || 0)}
+                className="w-24 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                min="0"
+              />
+              <button
+                onClick={handleBulkUpdateLikes}
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              >
+                Apply to All
+              </button>
+            </div>
+            <div className="flex items-center space-x-3">
+              <label className="font-medium text-gray-700 dark:text-gray-300">Set All Views to:</label>
+              <input
+                type="number"
+                value={bulkViewsValue}
+                onChange={(e) => setBulkViewsValue(parseInt(e.target.value) || 0)}
+                className="w-24 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                min="0"
+              />
+              <button
+                onClick={handleBulkUpdateViews}
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              >
+                Apply to All
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
