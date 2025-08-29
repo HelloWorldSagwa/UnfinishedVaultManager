@@ -123,17 +123,17 @@ export default function DashboardPage() {
         .neq('category', null)
 
       if (categories) {
-        const categoryCount = categories.reduce((acc, work) => {
-          const category = (work as any).category
+        const categoryCount = categories.reduce((acc: Record<string, number>, work: any) => {
+          const category = work.category
           acc[category] = (acc[category] || 0) + 1
           return acc
         }, {} as Record<string, number>)
 
-        const totalCategoryWorks = Object.values(categoryCount).reduce((a, b) => a + b, 0)
+        const totalCategoryWorks = Object.values(categoryCount).reduce((a, b) => Number(a) + Number(b), 0) as number
         const categoryStatsData = Object.entries(categoryCount).map(([category, count]) => ({
           category,
-          count,
-          percentage: totalCategoryWorks > 0 ? (count / totalCategoryWorks) * 100 : 0
+          count: count as number,
+          percentage: totalCategoryWorks > 0 ? ((count as number) / totalCategoryWorks) * 100 : 0
         }))
 
         setCategoryStats(categoryStatsData.sort((a, b) => b.count - a.count))

@@ -67,7 +67,7 @@ export default function DashboardLayout({
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      async (event: any, session: any) => {
         if (event === 'SIGNED_OUT' || !session) {
           router.push('/login')
         } else if (event === 'SIGNED_IN' && session.user) {
