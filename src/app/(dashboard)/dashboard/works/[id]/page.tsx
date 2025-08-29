@@ -97,7 +97,7 @@ export default function WorkDetailPage() {
         .from('contributions')
         .select('*')
         .eq('work_id', workId)
-        .order('timestamp', { ascending: false })
+        .order('timestamp', { ascending: true })  // Changed to ascending - oldest first
       
       if (contribError) throw contribError
       setContributions(contribData || [])
@@ -164,7 +164,7 @@ export default function WorkDetailPage() {
         contributors_count: newContributorsCount,
         completion_rate: newCompletionRate
       })
-      setContributions([newContribution, ...contributions])
+      setContributions([...contributions, newContribution])  // Add new contribution at the end
       setContributionForm({ author: '', authorId: '', content: '' })
       setShowContributionForm(false)
     } catch (error: any) {
