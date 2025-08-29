@@ -11,11 +11,21 @@ interface Work {
   category: string
 }
 
+interface User {
+  id: string
+  nickname: string
+  email?: string
+  status: string
+}
+
 export default function ManualInputPage() {
   // Form states
   const [activeTab, setActiveTab] = useState<'user' | 'work' | 'contribution'>('user')
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
+  
+  // Available users for dropdown
+  const [availableUsers, setAvailableUsers] = useState<User[]>([])
   
   // User form state
   const [userForm, setUserForm] = useState({
@@ -29,6 +39,7 @@ export default function ManualInputPage() {
     title: '',
     content: '',
     author: '',
+    authorId: '',
     category: '시',
     maxContributions: 4,
     isPrivate: false
@@ -38,17 +49,34 @@ export default function ManualInputPage() {
   const [contributionForm, setContributionForm] = useState({
     workId: '',
     content: '',
-    author: ''
+    author: '',
+    authorId: ''
   })
   
   // Works list for contribution selection
   const [works, setWorks] = useState<Work[]>([])
   
   useEffect(() => {
+    loadUsers()
     if (activeTab === 'contribution') {
       loadWorks()
     }
   }, [activeTab])
+  
+  const loadUsers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, nickname, email, status')
+        .eq('status', 'active')
+        .order('nickname', { ascending: true })
+      
+      if (error) throw error
+      setAvailableUsers(data || [])
+    } catch (error) {
+      console.error('Error loading users:', error)
+    }
+  }
   
   const loadWorks = async () => {
     try {
@@ -105,8 +133,14 @@ export default function ManualInputPage() {
   }
   
   const handleCreateWork = async () => {
-    if (!workForm.title || !workForm.content || !workForm.author) {
+    if (!workForm.title || !workForm.content || !workForm.authorId) {
       showMessage('error', 'Title, content, and author are required')
+      return
+    }
+    
+    const selectedUser = availableUsers.find(u => u.id === workForm.authorId)
+    if (!selectedUser) {
+      showMessage('error', 'Please select a valid author')
       return
     }
     
@@ -117,7 +151,8 @@ export default function ManualInputPage() {
         .insert({
           title: workForm.title,
           content: workForm.content,
-          author: workForm.author,
+          author: selectedUser.nickname,
+          author_id: selectedUser.id,
           category: workForm.category,
           max_contributions: workForm.maxContributions,
           is_private: workForm.isPrivate,
@@ -136,6 +171,7 @@ export default function ManualInputPage() {
         title: '',
         content: '',
         author: '',
+        authorId: '',
         category: '시',
         maxContributions: 4,
         isPrivate: false
@@ -149,8 +185,14 @@ export default function ManualInputPage() {
   }
   
   const handleCreateContribution = async () => {
-    if (!contributionForm.workId || !contributionForm.content || !contributionForm.author) {
+    if (!contributionForm.workId || !contributionForm.content || !contributionForm.authorId) {
       showMessage('error', 'All fields are required')
+      return
+    }
+    
+    const selectedUser = availableUsers.find(u => u.id === contributionForm.authorId)
+    if (!selectedUser) {
+      showMessage('error', 'Please select a valid contributor')
       return
     }
     
@@ -171,7 +213,8 @@ export default function ManualInputPage() {
         .insert({
           work_id: contributionForm.workId,
           content: contributionForm.content,
-          author: contributionForm.author,
+          author: selectedUser.nickname,
+          author_id: selectedUser.id,
           timestamp: new Date().toISOString(),
           like_count: 0
         })
@@ -198,7 +241,7 @@ export default function ManualInputPage() {
       
       const selectedWork = works.find(w => w.id === contributionForm.workId)
       showMessage('success', `Contribution added to "${selectedWork?.title || 'work'}"`)
-      setContributionForm({ workId: '', content: '', author: '' })
+      setContributionForm({ workId: '', content: '', author: '', authorId: '' })
       
       // Reload works to update the list
       loadWorks()
@@ -356,13 +399,21 @@ export default function ManualInputPage() {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Author <span className="text-red-500">*</span>
               </label>
-              <input
-                type="text"
-                value={workForm.author}
-                onChange={(e) => setWorkForm({ ...workForm, author: e.target.value })}
+              <select
+                value={workForm.authorId}
+                onChange={(e) => {
+                  const user = availableUsers.find(u => u.id === e.target.value)
+                  setWorkForm({ ...workForm, authorId: e.target.value, author: user?.nickname || '' })
+                }}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Enter author name"
-              />
+              >
+                <option value="">Select an author...</option>
+                {availableUsers.map((user) => (
+                  <option key={user.id} value={user.id}>
+                    {user.nickname} {user.email?.includes('@example.com') ? '(Dummy)' : ''}
+                  </option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -466,15 +517,23 @@ export default function ManualInputPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Contributor Name <span className="text-red-500">*</span>
+                Contributor <span className="text-red-500">*</span>
               </label>
-              <input
-                type="text"
-                value={contributionForm.author}
-                onChange={(e) => setContributionForm({ ...contributionForm, author: e.target.value })}
+              <select
+                value={contributionForm.authorId}
+                onChange={(e) => {
+                  const user = availableUsers.find(u => u.id === e.target.value)
+                  setContributionForm({ ...contributionForm, authorId: e.target.value, author: user?.nickname || '' })
+                }}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Enter contributor name"
-              />
+              >
+                <option value="">Select a contributor...</option>
+                {availableUsers.map((user) => (
+                  <option key={user.id} value={user.id}>
+                    {user.nickname} {user.email?.includes('@example.com') ? '(Dummy)' : ''}
+                  </option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">

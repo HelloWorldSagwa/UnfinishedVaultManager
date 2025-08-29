@@ -32,6 +32,13 @@ interface Contribution {
   like_count: number
 }
 
+interface User {
+  id: string
+  nickname: string
+  email?: string
+  status: string
+}
+
 export default function WorkDetailPage() {
   const params = useParams()
   const router = useRouter()
@@ -43,15 +50,33 @@ export default function WorkDetailPage() {
   const [showContributionForm, setShowContributionForm] = useState(false)
   const [contributionForm, setContributionForm] = useState({
     author: '',
+    authorId: '',
     content: ''
   })
   const [submitting, setSubmitting] = useState(false)
+  const [availableUsers, setAvailableUsers] = useState<User[]>([])
   
   useEffect(() => {
+    loadUsers()
     if (workId) {
       loadWorkDetails()
     }
   }, [workId])
+  
+  const loadUsers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, nickname, email, status')
+        .eq('status', 'active')
+        .order('nickname', { ascending: true })
+      
+      if (error) throw error
+      setAvailableUsers(data || [])
+    } catch (error) {
+      console.error('Error loading users:', error)
+    }
+  }
   
   const loadWorkDetails = async () => {
     try {
@@ -82,8 +107,14 @@ export default function WorkDetailPage() {
   }
   
   const handleAddContribution = async () => {
-    if (!contributionForm.author || !contributionForm.content) {
-      alert('Please fill in all fields')
+    if (!contributionForm.authorId || !contributionForm.content) {
+      alert('Please select a contributor and enter content')
+      return
+    }
+    
+    const selectedUser = availableUsers.find(u => u.id === contributionForm.authorId)
+    if (!selectedUser) {
+      alert('Please select a valid contributor')
       return
     }
     
@@ -96,7 +127,8 @@ export default function WorkDetailPage() {
         .from('contributions')
         .insert({
           work_id: workId,
-          author: contributionForm.author,
+          author: selectedUser.nickname,
+          author_id: selectedUser.id,
           content: contributionForm.content,
           timestamp: new Date().toISOString(),
           like_count: 0
@@ -131,7 +163,7 @@ export default function WorkDetailPage() {
         completion_rate: newCompletionRate
       })
       setContributions([newContribution, ...contributions])
-      setContributionForm({ author: '', content: '' })
+      setContributionForm({ author: '', authorId: '', content: '' })
       setShowContributionForm(false)
     } catch (error: any) {
       console.error('Error adding contribution:', error)
@@ -318,15 +350,23 @@ export default function WorkDetailPage() {
           <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Your Name <span className="text-red-500">*</span>
+                Contributor <span className="text-red-500">*</span>
               </label>
-              <input
-                type="text"
-                value={contributionForm.author}
-                onChange={(e) => setContributionForm({ ...contributionForm, author: e.target.value })}
+              <select
+                value={contributionForm.authorId}
+                onChange={(e) => {
+                  const user = availableUsers.find(u => u.id === e.target.value)
+                  setContributionForm({ ...contributionForm, authorId: e.target.value, author: user?.nickname || '' })
+                }}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Enter your name"
-              />
+              >
+                <option value="">Select a contributor...</option>
+                {availableUsers.map((user) => (
+                  <option key={user.id} value={user.id}>
+                    {user.nickname} {user.email?.includes('@example.com') ? '(Dummy)' : ''}
+                  </option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -351,7 +391,7 @@ export default function WorkDetailPage() {
               <button
                 onClick={() => {
                   setShowContributionForm(false)
-                  setContributionForm({ author: '', content: '' })
+                  setContributionForm({ author: '', authorId: '', content: '' })
                 }}
                 className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
