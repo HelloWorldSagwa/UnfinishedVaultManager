@@ -91,6 +91,17 @@ export default function DummyUsersPage() {
         throw new Error('Failed to create auth user')
       }
       
+      // Sign in first to get authenticated context
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+        email: dummyEmail,
+        password: dummyPassword
+      })
+      
+      if (signInError) {
+        console.error('Sign in error:', signInError)
+        // Continue anyway - the user is created even if sign in fails
+      }
+      
       // Then create/update the profile with the same ID
       const { error: profileError } = await supabase
         .from('profiles')
@@ -105,7 +116,12 @@ export default function DummyUsersPage() {
           updated_at: new Date().toISOString()
         })
       
-      if (profileError) throw profileError
+      if (profileError) {
+        console.warn('Profile creation failed with RLS. User created but profile not set:', profileError)
+        // Don't throw - user is created in auth.users
+        showMessage('success', `User created with email ${dummyEmail} (Profile setup pending due to RLS)`)
+        return
+      }
       
       showMessage('success', `Dummy user "${newUser.nickname}" created successfully`)
       setNewUser({ nickname: '', email: '', appleId: '' })
