@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase/client'
-import { UserPlus, Trash2, Users, Check, X, RefreshCw } from 'lucide-react'
+import { UserPlus, Trash2, Users, Check, X } from 'lucide-react'
 
 interface DummyUser {
   id: string
@@ -24,20 +24,6 @@ export default function DummyUsersPage() {
     email: '',
     appleId: ''
   })
-  
-  // Predefined dummy user templates
-  const dummyTemplates = [
-    { nickname: '문학소녀', email: 'literature@example.com' },
-    { nickname: '시인의마음', email: 'poet@example.com' },
-    { nickname: '글쓰는곰', email: 'writingbear@example.com' },
-    { nickname: '달빛작가', email: 'moonwriter@example.com' },
-    { nickname: '바람의노래', email: 'windsong@example.com' },
-    { nickname: '별헤는밤', email: 'starrynight@example.com' },
-    { nickname: '고요한아침', email: 'quietmorning@example.com' },
-    { nickname: '푸른하늘', email: 'bluesky@example.com' },
-    { nickname: '책벌레', email: 'bookworm@example.com' },
-    { nickname: '펜과종이', email: 'penandpaper@example.com' },
-  ]
   
   useEffect(() => {
     loadDummyUsers()
@@ -75,7 +61,9 @@ export default function DummyUsersPage() {
     setCreating(true)
     try {
       const userId = crypto.randomUUID()
-      const dummyEmail = newUser.email || `${newUser.nickname.toLowerCase().replace(/\s+/g, '')}@example.com`
+      // Generate unique email with timestamp to avoid duplicates
+      const timestamp = Date.now()
+      const dummyEmail = newUser.email || `${newUser.nickname.toLowerCase().replace(/\s+/g, '')}_${timestamp}@example.com`
       
       const { error } = await supabase
         .from('profiles')
@@ -96,57 +84,17 @@ export default function DummyUsersPage() {
       loadDummyUsers()
     } catch (error: any) {
       console.error('Error creating dummy user:', error)
-      showMessage('error', error.message || 'Failed to create dummy user')
+      // Handle duplicate email error specifically
+      if (error.code === '23505' || error.message?.includes('duplicate')) {
+        showMessage('error', 'A user with this email already exists. Please use a different email.')
+      } else {
+        showMessage('error', error.message || 'Failed to create dummy user')
+      }
     } finally {
       setCreating(false)
     }
   }
   
-  const generateRandomUsers = async () => {
-    setCreating(true)
-    let successCount = 0
-    let failCount = 0
-    
-    for (const template of dummyTemplates) {
-      try {
-        const userId = crypto.randomUUID()
-        const randomNum = Math.floor(Math.random() * 1000)
-        const nickname = `${template.nickname}${randomNum}`
-        const email = template.email.replace('@', `${randomNum}@`)
-        
-        const { error } = await supabase
-          .from('profiles')
-          .insert({
-            id: userId,
-            nickname: nickname,
-            email: email,
-            apple_id: null,
-            status: 'active',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          })
-        
-        if (error) {
-          failCount++
-          console.error(`Failed to create ${nickname}:`, error)
-        } else {
-          successCount++
-        }
-      } catch (error) {
-        failCount++
-        console.error('Error in batch creation:', error)
-      }
-    }
-    
-    if (successCount > 0) {
-      showMessage('success', `Created ${successCount} dummy users${failCount > 0 ? ` (${failCount} failed)` : ''}`)
-      loadDummyUsers()
-    } else {
-      showMessage('error', 'Failed to create dummy users')
-    }
-    
-    setCreating(false)
-  }
   
   const deleteUser = async (userId: string) => {
     if (!confirm('Are you sure you want to delete this dummy user?')) {
@@ -200,25 +148,15 @@ export default function DummyUsersPage() {
             Create and manage dummy users for testing
           </p>
         </div>
-        <div className="flex space-x-3">
+        {users.length > 0 && (
           <button
-            onClick={generateRandomUsers}
-            disabled={creating}
-            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+            onClick={deleteAllDummyUsers}
+            className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors flex items-center space-x-2"
           >
-            <RefreshCw className={`w-4 h-4 ${creating ? 'animate-spin' : ''}`} />
-            <span>Generate 10 Random Users</span>
+            <Trash2 className="w-4 h-4" />
+            <span>Delete All</span>
           </button>
-          {users.length > 0 && (
-            <button
-              onClick={deleteAllDummyUsers}
-              className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors flex items-center space-x-2"
-            >
-              <Trash2 className="w-4 h-4" />
-              <span>Delete All</span>
-            </button>
-          )}
-        </div>
+        )}
       </div>
       
       {/* Message Alert */}
