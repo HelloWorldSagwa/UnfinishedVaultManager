@@ -106,16 +106,39 @@ export default function ManualInputPage() {
     }
     
     setLoading(true)
+    
+    // Generate email components outside try block
+    const randomId = Math.floor(Math.random() * 100000).toString() // 5 digit number
+    const dummyEmail = userForm.email || `dummy${randomId}@example.com`
+    const dummyPassword = `TestPass${randomId}!`
+    
+    console.log('Creating dummy user with email:', dummyEmail) // Debug log
+    
     try {
-      // Generate a random UUID for the user
-      const userId = crypto.randomUUID()
+      // First, create a user in auth.users using Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: dummyEmail,
+        password: dummyPassword,
+        options: {
+          data: {
+            nickname: userForm.nickname
+          }
+        }
+      })
       
-      const { error } = await supabase
+      if (authError) throw authError
+      
+      if (!authData.user) {
+        throw new Error('Failed to create auth user')
+      }
+      
+      // Then create/update the profile with the same ID
+      const { error: profileError } = await supabase
         .from('profiles')
-        .insert({
-          id: userId,
+        .upsert({
+          id: authData.user.id,
           nickname: userForm.nickname,
-          email: userForm.email || null,
+          email: dummyEmail,
           apple_id: userForm.appleId || null,
           status: 'active',
           is_dummy: true,  // Mark as dummy user
@@ -123,14 +146,24 @@ export default function ManualInputPage() {
           updated_at: new Date().toISOString()
         })
       
-      if (error) throw error
+      if (profileError) throw profileError
       
-      showMessage('success', `User "${userForm.nickname}" created successfully with ID: ${userId}`)
+      showMessage('success', `Dummy user "${userForm.nickname}" created successfully`)
       setUserForm({ nickname: '', email: '', appleId: '' })
       loadUsers()  // Reload users to show the new one in dropdown
     } catch (error: any) {
-      console.error('Error creating user:', error)
-      showMessage('error', error.message || 'Failed to create user')
+      console.error('Error creating dummy user:', error)
+      
+      // Handle specific error cases
+      if (error.message?.includes('invalid') || error.message?.includes('validate')) {
+        showMessage('error', `Invalid email format. Generated email was: ${dummyEmail}`)
+      } else if (error.code === '23505' || error.message?.includes('duplicate') || error.message?.includes('already registered')) {
+        showMessage('error', 'A user with this email already exists. Please try again.')
+      } else if (error.code === '23503') {
+        showMessage('error', 'Failed to create user profile. Please try again.')
+      } else {
+        showMessage('error', error.message || 'Failed to create dummy user')
+      }
     } finally {
       setLoading(false)
     }
