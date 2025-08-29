@@ -27,15 +27,16 @@ export default function LoginPage() {
 
       if (!result.success) {
         setError(result.message)
+        setLoading(false)
         return
       }
 
       // 로그인 성공
-      router.push('/dashboard')
+      console.log('Login successful, redirecting to dashboard...')
+      await router.push('/dashboard')
     } catch (err: any) {
       setError('로그인 중 오류가 발생했습니다.')
       console.error('Login error:', err)
-    } finally {
       setLoading(false)
     }
   }
