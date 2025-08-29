@@ -2,16 +2,16 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase/client'
+import adminAuth from '@/lib/admin-auth-simple'
 import Sidebar from '@/components/layout/sidebar'
-import type { User } from '@supabase/supabase-js'
+import type { AdminAccount } from '@/lib/admin-auth-simple'
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const [user, setUser] = useState<User | null>(null)
+  const [user, setUser] = useState<AdminAccount | null>(null)
   const [loading, setLoading] = useState(true)
   const [isDark, setIsDark] = useState(false)
   const router = useRouter()
@@ -39,45 +39,26 @@ export default function DashboardLayout({
 
   useEffect(() => {
     const checkUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
+      // 세션 확인
+      const isValid = await adminAuth.validateSession()
       
-      if (!user) {
+      if (!isValid) {
         router.push('/login')
         return
       }
 
-      // Check if user has admin role
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role, status')
-        .eq('id', user.id)
-        .single()
-
-      if (!profile || (profile as any).role !== 'admin' || (profile as any).status !== 'active') {
-        await supabase.auth.signOut()
+      // 현재 관리자 정보 가져오기
+      const admin = adminAuth.getCurrentAdmin()
+      if (!admin) {
         router.push('/login')
         return
       }
 
-      setUser(user)
+      setUser(admin)
       setLoading(false)
     }
 
     checkUser()
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event: any, session: any) => {
-        if (event === 'SIGNED_OUT' || !session) {
-          router.push('/login')
-        } else if (event === 'SIGNED_IN' && session.user) {
-          setUser(session.user)
-          setLoading(false)
-        }
-      }
-    )
-
-    return () => subscription.unsubscribe()
   }, [router])
 
   const toggleTheme = () => {

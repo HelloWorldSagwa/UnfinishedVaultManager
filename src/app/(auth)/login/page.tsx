@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import adminAuth from '@/lib/admin-auth'
+import adminAuth from '@/lib/admin-auth-simple'
 import { Eye, EyeOff, LogIn, Info, User, Lock } from 'lucide-react'
 
 export default function LoginPage() {

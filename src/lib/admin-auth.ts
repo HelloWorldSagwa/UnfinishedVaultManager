@@ -57,26 +57,40 @@ class AdminAuthService {
   // 로그인
   async login(username: string, password: string): Promise<{ success: boolean; message: string; session?: AdminSession }> {
     try {
-      // 관리자 계정 조회
-      const { data: admin, error: fetchError } = await supabase
+      // 관리자 계정 조회 - username 또는 email로 찾기
+      let { data: admins, error: fetchError } = await supabase
         .from('admin_accounts')
         .select('*')
-        .or(`username.eq.${username},email.eq.${username}`)
         .eq('is_active', true)
-        .single()
+      
+      if (fetchError || !admins || admins.length === 0) {
+        return { success: false, message: '계정을 찾을 수 없습니다.' }
+      }
+
+      // username 또는 email 매칭
+      const admin = admins.find((a: any) => 
+        a.username === username || a.email === username
+      )
 
       if (fetchError || !admin) {
         return { success: false, message: '계정을 찾을 수 없습니다.' }
       }
 
-      // 비밀번호 확인
-      const passwordMatch = await bcrypt.compare(password, admin.password_hash)
-      if (!passwordMatch) {
-        // 활동 로그 기록
-        await this.logActivity(admin.id, 'login_failed', 'admin_accounts', admin.id, {
-          reason: 'invalid_password'
+      // RPC 함수를 통한 비밀번호 확인 (서버에서 bcrypt 비교)
+      const { data: loginResult, error: loginError } = await supabase
+        .rpc('admin_login', {
+          p_username: username,
+          p_password: password
         })
-        return { success: false, message: '비밀번호가 일치하지 않습니다.' }
+
+      if (loginError || !loginResult || !loginResult.success) {
+        // 활동 로그 기록
+        if (admin) {
+          await this.logActivity(admin.id, 'login_failed', 'admin_accounts', admin.id, {
+            reason: 'invalid_password'
+          })
+        }
+        return { success: false, message: loginResult?.message || '비밀번호가 일치하지 않습니다.' }
       }
 
       // 세션 토큰 생성

@@ -16,7 +16,7 @@ import {
   Sun,
   BookOpen
 } from 'lucide-react'
-import { supabase } from '@/lib/supabase/client'
+import adminAuth from '@/lib/admin-auth-simple'
 
 interface SidebarProps {
   isDark: boolean
@@ -36,7 +36,7 @@ export default function Sidebar({ isDark, toggleTheme }: SidebarProps) {
   ]
 
   const handleLogout = async () => {
-    await supabase.auth.signOut()
+    await adminAuth.logout()
     router.push('/login')
   }
 
