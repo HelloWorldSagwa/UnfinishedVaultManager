@@ -3,16 +3,12 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import DataTable, { Column } from '@/components/ui/data-table'
-import { Work, Profile } from '@/types/database'
+import { Work } from '@/types/database'
 import { Eye, Edit, Trash2, Plus, ExternalLink } from 'lucide-react'
 import { format } from 'date-fns'
 
-type WorkWithProfile = Work & {
-  profiles?: Profile | null
-}
-
 export default function WorksManagementPage() {
-  const [works, setWorks] = useState<WorkWithProfile[]>([])
+  const [works, setWorks] = useState<Work[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -23,14 +19,7 @@ export default function WorksManagementPage() {
     try {
       const { data, error } = await supabase
         .from('works')
-        .select(`
-          *,
-          profiles:author_id (
-            id,
-            nickname,
-            status
-          )
-        `)
+        .select('*')
         .order('created_date', { ascending: false })
 
       if (error) throw error
@@ -80,7 +69,7 @@ export default function WorksManagementPage() {
     }
   }
 
-  const columns: Column<WorkWithProfile>[] = [
+  const columns: Column<Work>[] = [
     {
       key: 'title',
       header: 'Title',
@@ -101,19 +90,8 @@ export default function WorksManagementPage() {
       header: 'Author',
       sortable: true,
       render: (value, work) => (
-        <div>
-          <div className="text-gray-900 dark:text-white">
-            {work.profiles?.nickname || value || 'Anonymous'}
-          </div>
-          <div className="text-xs text-gray-500 dark:text-gray-400">
-            {work.profiles?.status && (
-              <span className={`inline-flex px-2 py-1 rounded-full text-xs ${
-                work.profiles.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-              }`}>
-                {work.profiles.status}
-              </span>
-            )}
-          </div>
+        <div className="text-gray-900 dark:text-white">
+          {value || 'Anonymous'}
         </div>
       )
     },

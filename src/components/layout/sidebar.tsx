@@ -14,7 +14,8 @@ import {
   LogOut,
   Moon,
   Sun,
-  BookOpen
+  BookOpen,
+  PlusCircle
 } from 'lucide-react'
 import adminAuth from '@/lib/admin-auth-simple'
 
@@ -32,6 +33,7 @@ export default function Sidebar({ isDark, toggleTheme }: SidebarProps) {
     { name: 'Dashboard', href: '/dashboard', icon: Home },
     { name: 'Works Management', href: '/dashboard/works', icon: FileText },
     { name: 'Users Management', href: '/dashboard/users', icon: Users },
+    { name: 'Manual Input', href: '/dashboard/manual-input', icon: PlusCircle },
     { name: 'Dummy Data Generator', href: '/dashboard/dummy-data', icon: Database },
   ]
 
