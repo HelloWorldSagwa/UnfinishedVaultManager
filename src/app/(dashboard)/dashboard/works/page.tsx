@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import DataTable, { Column } from '@/components/ui/data-table'
 import { Work } from '@/types/database'
-import { Eye, Trash2, Plus } from 'lucide-react'
+import { Trash2, Plus } from 'lucide-react'
 import { format } from 'date-fns'
 
 export default function WorksManagementPage() {
@@ -100,17 +100,8 @@ export default function WorksManagementPage() {
       header: 'Author',
       sortable: true,
       render: (value, work) => (
-        <div className="flex items-center space-x-3">
-          <div className="text-gray-900 dark:text-white">
-            {value || 'Anonymous'}
-          </div>
-          <a
-            href={`/dashboard/works/${work.id}`}
-            className="p-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors"
-            title="View Details"
-          >
-            <Eye className="w-4 h-4" />
-          </a>
+        <div className="text-gray-900 dark:text-white">
+          {value || 'Anonymous'}
         </div>
       )
     },
