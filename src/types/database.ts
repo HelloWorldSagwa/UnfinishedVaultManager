@@ -11,6 +11,7 @@ export interface Database {
           updated_at: string
           email: string | null
           role: 'user' | 'admin' | null
+          is_dummy: boolean
         }
         Insert: {
           id: string
@@ -21,6 +22,7 @@ export interface Database {
           updated_at?: string
           email?: string | null
           role?: 'user' | 'admin' | null
+          is_dummy?: boolean
         }
         Update: {
           id?: string
@@ -31,6 +33,7 @@ export interface Database {
           updated_at?: string
           email?: string | null
           role?: 'user' | 'admin' | null
+          is_dummy?: boolean
         }
       }
       works: {

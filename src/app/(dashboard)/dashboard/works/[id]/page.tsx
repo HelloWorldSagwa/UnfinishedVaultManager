@@ -37,6 +37,7 @@ interface User {
   nickname: string
   email?: string
   status: string
+  is_dummy?: boolean
 }
 
 export default function WorkDetailPage() {
@@ -69,7 +70,7 @@ export default function WorkDetailPage() {
         .from('profiles')
         .select('id, nickname, email, status')
         .eq('status', 'active')
-        .like('email', '%@example.com')  // Only load dummy users
+        .eq('is_dummy', true)  // Use is_dummy flag instead of email pattern
         .order('nickname', { ascending: true })
       
       if (error) throw error

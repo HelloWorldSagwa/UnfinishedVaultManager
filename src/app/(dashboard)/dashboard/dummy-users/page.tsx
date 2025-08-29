@@ -11,6 +11,7 @@ interface DummyUser {
   apple_id?: string
   status: string
   created_at: string
+  is_dummy?: boolean
 }
 
 export default function DummyUsersPage() {
@@ -34,7 +35,7 @@ export default function DummyUsersPage() {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .like('email', '%@example.com')
+        .eq('is_dummy', true)  // Use is_dummy flag instead of email pattern
         .order('created_at', { ascending: false })
       
       if (error) throw error
@@ -90,6 +91,7 @@ export default function DummyUsersPage() {
           email: dummyEmail,
           apple_id: newUser.appleId || null,
           status: 'active',
+          is_dummy: true,  // Mark as dummy user
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         })
@@ -145,7 +147,7 @@ export default function DummyUsersPage() {
       const { error } = await supabase
         .from('profiles')
         .delete()
-        .like('email', '%@example.com')
+        .eq('is_dummy', true)  // Use is_dummy flag instead of email pattern
       
       if (error) throw error
       
