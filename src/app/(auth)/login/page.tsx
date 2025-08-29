@@ -33,8 +33,11 @@ export default function LoginPage() {
 
       // 로그인 성공
       console.log('Login successful, redirecting to dashboard...')
-      // Use window.location for more reliable redirect
-      window.location.href = '/dashboard'
+      setLoading(false)
+      // Force redirect with timeout to ensure state updates
+      setTimeout(() => {
+        window.location.href = '/dashboard'
+      }, 100)
     } catch (err: any) {
       setError('로그인 중 오류가 발생했습니다.')
       console.error('Login error:', err)
