@@ -11,7 +11,7 @@ interface Work {
   category: string
 }
 
-interface User {
+interface DummyUser {
   id: string
   nickname: string
   email?: string
@@ -26,7 +26,7 @@ export default function ManualInputPage() {
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
   
   // Available users for dropdown
-  const [availableUsers, setAvailableUsers] = useState<User[]>([])
+  const [availableUsers, setAvailableUsers] = useState<DummyUser[]>([])
   
   // User form state
   const [userForm, setUserForm] = useState({
@@ -118,6 +118,7 @@ export default function ManualInputPage() {
           email: userForm.email || null,
           apple_id: userForm.appleId || null,
           status: 'active',
+          is_dummy: true,  // Mark as dummy user
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         })
@@ -126,6 +127,7 @@ export default function ManualInputPage() {
       
       showMessage('success', `User "${userForm.nickname}" created successfully with ID: ${userId}`)
       setUserForm({ nickname: '', email: '', appleId: '' })
+      loadUsers()  // Reload users to show the new one in dropdown
     } catch (error: any) {
       console.error('Error creating user:', error)
       showMessage('error', error.message || 'Failed to create user')
