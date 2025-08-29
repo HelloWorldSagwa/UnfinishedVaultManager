@@ -72,20 +72,27 @@ export default function WorksManagementPage() {
   const columns: Column<Work>[] = [
     {
       key: 'title',
-      header: 'Title',
+      header: 'Title & Content',
       sortable: true,
       render: (value, work) => (
-        <a 
-          href={`/dashboard/works/${work.id}`}
-          className="block hover:opacity-80 transition-opacity"
-        >
-          <div className="font-medium text-blue-600 dark:text-blue-400 truncate max-w-xs hover:underline" title={value}>
-            {value}
-          </div>
-          <div className="text-sm text-gray-500 dark:text-gray-400">
-            {work.category}
-          </div>
-        </a>
+        <div className="max-w-md">
+          <a 
+            href={`/dashboard/works/${work.id}`}
+            className="block hover:opacity-80 transition-opacity"
+          >
+            <div className="font-medium text-blue-600 dark:text-blue-400 hover:underline" title={value}>
+              {value}
+            </div>
+            <div className="text-sm text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
+              {work.content.substring(0, 100)}{work.content.length > 100 ? '...' : ''}
+            </div>
+            <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+              <span className="inline-flex px-2 py-0.5 bg-gray-100 dark:bg-gray-700 rounded">
+                {work.category}
+              </span>
+            </div>
+          </a>
+        </div>
       )
     },
     {
@@ -93,8 +100,17 @@ export default function WorksManagementPage() {
       header: 'Author',
       sortable: true,
       render: (value, work) => (
-        <div className="text-gray-900 dark:text-white">
-          {value || 'Anonymous'}
+        <div className="flex items-center space-x-3">
+          <div className="text-gray-900 dark:text-white">
+            {value || 'Anonymous'}
+          </div>
+          <a
+            href={`/dashboard/works/${work.id}`}
+            className="p-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors"
+            title="View Details"
+          >
+            <Eye className="w-4 h-4" />
+          </a>
         </div>
       )
     },
@@ -170,22 +186,15 @@ export default function WorksManagementPage() {
     },
     {
       key: 'id',
-      header: 'Actions',
+      header: 'Delete',
       render: (value, work) => (
-        <div className="flex items-center space-x-2">
-          <a
-            href={`/dashboard/works/${work.id}`}
-            className="p-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
-            title="View Details"
-          >
-            <Eye className="w-4 h-4" />
-          </a>
+        <div className="flex items-center justify-center">
           <button
             onClick={() => handleDelete(work.id)}
-            className="p-1 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
-            title="Delete"
+            className="p-2 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+            title="Delete Work"
           >
-            <Trash2 className="w-4 h-4" />
+            <Trash2 className="w-5 h-5" />
           </button>
         </div>
       )
