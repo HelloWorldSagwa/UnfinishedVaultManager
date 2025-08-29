@@ -112,6 +112,15 @@ export default function DummyUsersPage() {
       loadDummyUsers()
     } catch (error: any) {
       console.error('Error creating dummy user:', error)
+      console.error('Error details:', {
+        message: error?.message,
+        code: error?.code,
+        status: error?.status,
+        statusText: error?.statusText,
+        details: error?.details,
+        hint: error?.hint,
+        __isAuthError: error?.__isAuthError
+      })
       
       // Handle specific error cases
       if (error.message?.includes('invalid') || error.message?.includes('validate')) {
@@ -121,7 +130,7 @@ export default function DummyUsersPage() {
       } else if (error.code === '23503') {
         showMessage('error', 'Failed to create user profile. Please try again.')
       } else {
-        showMessage('error', error.message || 'Failed to create dummy user')
+        showMessage('error', error.message || error.msg || JSON.stringify(error) || 'Failed to create dummy user')
       }
     } finally {
       setCreating(false)
