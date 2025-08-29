@@ -10,6 +10,8 @@ import { format } from 'date-fns'
 export default function WorksManagementPage() {
   const [works, setWorks] = useState<Work[]>([])
   const [loading, setLoading] = useState(true)
+  const [editingLikes, setEditingLikes] = useState<{ [key: string]: number | null }>({})
+  const [editingViews, setEditingViews] = useState<{ [key: string]: number | null }>({})
 
   useEffect(() => {
     loadWorks()
@@ -48,6 +50,44 @@ export default function WorksManagementPage() {
     } catch (error) {
       console.error('Error deleting work:', error)
       alert('Failed to delete work')
+    }
+  }
+
+  const handleUpdateLikes = async (id: string, newValue: number) => {
+    try {
+      const { error } = await supabase
+        .from('works')
+        .update({ like_count: newValue })
+        .eq('id', id)
+
+      if (error) throw error
+      
+      setWorks(works.map(work => 
+        work.id === id ? { ...work, like_count: newValue } : work
+      ))
+      setEditingLikes({ ...editingLikes, [id]: null })
+    } catch (error) {
+      console.error('Error updating likes:', error)
+      alert('Failed to update likes')
+    }
+  }
+
+  const handleUpdateViews = async (id: string, newValue: number) => {
+    try {
+      const { error } = await supabase
+        .from('works')
+        .update({ view_count: newValue })
+        .eq('id', id)
+
+      if (error) throw error
+      
+      setWorks(works.map(work => 
+        work.id === id ? { ...work, view_count: newValue } : work
+      ))
+      setEditingViews({ ...editingViews, [id]: null })
+    } catch (error) {
+      console.error('Error updating views:', error)
+      alert('Failed to update views')
     }
   }
 
@@ -127,17 +167,87 @@ export default function WorksManagementPage() {
       key: 'like_count',
       header: 'Likes',
       sortable: true,
-      render: (value) => (
-        <span className="text-gray-900 dark:text-white">{value || 0}</span>
-      )
+      render: (value, work) => {
+        const isEditing = editingLikes[work.id] !== undefined && editingLikes[work.id] !== null
+        
+        if (isEditing) {
+          return (
+            <div className="flex items-center space-x-1">
+              <input
+                type="number"
+                value={editingLikes[work.id] || 0}
+                onChange={(e) => setEditingLikes({ ...editingLikes, [work.id]: parseInt(e.target.value) || 0 })}
+                className="w-20 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                min="0"
+              />
+              <button
+                onClick={() => handleUpdateLikes(work.id, editingLikes[work.id] || 0)}
+                className="text-green-600 hover:text-green-700 text-sm"
+              >
+                ✓
+              </button>
+              <button
+                onClick={() => setEditingLikes({ ...editingLikes, [work.id]: null })}
+                className="text-red-600 hover:text-red-700 text-sm"
+              >
+                ✗
+              </button>
+            </div>
+          )
+        }
+        
+        return (
+          <button
+            onClick={() => setEditingLikes({ ...editingLikes, [work.id]: value || 0 })}
+            className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 px-2 py-1 rounded transition-colors"
+          >
+            {value || 0}
+          </button>
+        )
+      }
     },
     {
       key: 'view_count',
       header: 'Views',
       sortable: true,
-      render: (value) => (
-        <span className="text-gray-900 dark:text-white">{value || 0}</span>
-      )
+      render: (value, work) => {
+        const isEditing = editingViews[work.id] !== undefined && editingViews[work.id] !== null
+        
+        if (isEditing) {
+          return (
+            <div className="flex items-center space-x-1">
+              <input
+                type="number"
+                value={editingViews[work.id] || 0}
+                onChange={(e) => setEditingViews({ ...editingViews, [work.id]: parseInt(e.target.value) || 0 })}
+                className="w-20 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                min="0"
+              />
+              <button
+                onClick={() => handleUpdateViews(work.id, editingViews[work.id] || 0)}
+                className="text-green-600 hover:text-green-700 text-sm"
+              >
+                ✓
+              </button>
+              <button
+                onClick={() => setEditingViews({ ...editingViews, [work.id]: null })}
+                className="text-red-600 hover:text-red-700 text-sm"
+              >
+                ✗
+              </button>
+            </div>
+          )
+        }
+        
+        return (
+          <button
+            onClick={() => setEditingViews({ ...editingViews, [work.id]: value || 0 })}
+            className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 px-2 py-1 rounded transition-colors"
+          >
+            {value || 0}
+          </button>
+        )
+      }
     },
     {
       key: 'contributors_count',
