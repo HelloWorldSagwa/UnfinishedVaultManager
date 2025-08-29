@@ -14,9 +14,15 @@ export default function LoginPage() {
   const [showDefaultAccounts, setShowDefaultAccounts] = useState(false)
   const router = useRouter()
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleLogin = async () => {
+    console.log('Login button clicked')
     console.log('Login attempt with:', { username, password })
+    
+    if (!username || !password) {
+      setError('Please enter username and password')
+      return
+    }
+    
     setLoading(true)
     setError('')
 
@@ -49,6 +55,12 @@ export default function LoginPage() {
     }
   }
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    handleLogin()
+  }
+
   // 기본 계정 정보 (개발용)
   const defaultAccounts = [
     { role: 'Super Admin', username: 'superadmin', password: 'Admin@2024!', badge: 'bg-red-500' },
@@ -71,7 +83,7 @@ export default function LoginPage() {
             <p className="text-gray-400 text-sm">Admin Dashboard</p>
           </div>
 
-          <form onSubmit={handleLogin} className="space-y-8">
+          <form onSubmit={handleSubmit} className="space-y-8">
             <div>
               <label htmlFor="username" className="block text-xs font-medium text-gray-400 mb-3 uppercase tracking-wider">
                 Username
@@ -130,7 +142,8 @@ export default function LoginPage() {
             )}
 
             <button
-              type="submit"
+              type="button"
+              onClick={handleLogin}
               disabled={loading}
               className="w-full flex justify-center items-center py-4 px-6 border border-transparent rounded-xl shadow-lg text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-[1.02]"
             >
