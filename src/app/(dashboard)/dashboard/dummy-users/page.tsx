@@ -61,14 +61,18 @@ export default function DummyUsersPage() {
     
     setCreating(true)
     try {
-      // Generate unique email with timestamp to avoid duplicates
-      const timestamp = Date.now()
-      const dummyEmail = newUser.email || `${newUser.nickname.toLowerCase().replace(/\s+/g, '')}_${timestamp}@example.com`
+      // Generate unique email with shorter format
+      const randomId = Math.random().toString(36).substring(2, 8) // 6 random chars
+      const cleanNickname = newUser.nickname.toLowerCase()
+        .replace(/\s+/g, '')
+        .replace(/[^a-z0-9]/g, '')
+        .substring(0, 10) // Limit nickname length
+      const dummyEmail = newUser.email || `${cleanNickname}${randomId}@example.com`
       
       // First, create a user in auth.users using Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: dummyEmail,
-        password: `DummyPass${timestamp}!`, // Generate a secure dummy password
+        password: `Dummy${randomId}Pass!`, // Generate a secure dummy password
         options: {
           data: {
             nickname: newUser.nickname
@@ -103,8 +107,12 @@ export default function DummyUsersPage() {
       loadDummyUsers()
     } catch (error: any) {
       console.error('Error creating dummy user:', error)
-      // Handle duplicate email error specifically
-      if (error.code === '23505' || error.message?.includes('duplicate') || error.message?.includes('already registered')) {
+      console.log('Attempted email:', newUser.email || `${cleanNickname}${randomId}@example.com`) // Debug log
+      
+      // Handle specific error cases
+      if (error.message?.includes('invalid format') || error.message?.includes('validate email')) {
+        showMessage('error', 'Invalid email format. Please try a different nickname or provide a valid email.')
+      } else if (error.code === '23505' || error.message?.includes('duplicate') || error.message?.includes('already registered')) {
         showMessage('error', 'A user with this email already exists. Please use a different email.')
       } else if (error.code === '23503') {
         showMessage('error', 'Failed to create user profile. Please try again.')
