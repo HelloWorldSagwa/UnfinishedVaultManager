@@ -34,10 +34,8 @@ export default function LoginPage() {
       // 로그인 성공
       console.log('Login successful, redirecting to dashboard...')
       setLoading(false)
-      // Force redirect with timeout to ensure state updates
-      setTimeout(() => {
-        window.location.href = '/dashboard'
-      }, 100)
+      // Force redirect with replace to avoid history issues
+      window.location.replace('/dashboard')
     } catch (err: any) {
       setError('로그인 중 오류가 발생했습니다.')
       console.error('Login error:', err)
@@ -47,10 +45,10 @@ export default function LoginPage() {
 
   // 기본 계정 정보 (개발용)
   const defaultAccounts = [
-    { role: '최고 관리자', username: 'superadmin', password: 'Admin@2024!', badge: 'bg-red-500' },
-    { role: '일반 관리자', username: 'admin', password: 'Admin@2024!', badge: 'bg-blue-500' },
-    { role: '모더레이터', username: 'moderator', password: 'Mod@2024!', badge: 'bg-green-500' },
-    { role: '뷰어', username: 'viewer', password: 'View@2024!', badge: 'bg-gray-500' },
+    { role: 'Super Admin', username: 'superadmin', password: 'Admin@2024!', badge: 'bg-red-500' },
+    { role: 'Admin', username: 'admin', password: 'Admin@2024!', badge: 'bg-blue-500' },
+    { role: 'Moderator', username: 'moderator', password: 'Mod@2024!', badge: 'bg-green-500' },
+    { role: 'Viewer', username: 'viewer', password: 'View@2024!', badge: 'bg-gray-500' },
   ]
 
   const fillCredentials = (username: string, password: string) => {
@@ -59,64 +57,64 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
-      <div className="w-full max-w-md">
-        <div className="bg-gray-800 rounded-2xl shadow-xl p-8 border border-gray-700">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-white mb-2">UnfinishedVault</h1>
-            <p className="text-gray-400">관리자 대시보드</p>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      <div className="w-full max-w-md mx-8">
+        <div className="bg-white/5 backdrop-blur-lg rounded-3xl shadow-2xl p-12 border border-white/10">
+          <div className="text-center mb-12">
+            <h1 className="text-4xl font-light text-white mb-3 tracking-wide">UnfinishedVault</h1>
+            <p className="text-gray-400 text-sm">Admin Dashboard</p>
           </div>
 
-          <form onSubmit={handleLogin} className="space-y-6">
+          <form onSubmit={handleLogin} className="space-y-8">
             <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-300 mb-2">
-                아이디 또는 이메일
+              <label htmlFor="username" className="block text-xs font-medium text-gray-400 mb-3 uppercase tracking-wider">
+                Username
               </label>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500" />
+                <User className="absolute left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
                 <input
                   id="username"
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="w-full pl-10 pr-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="아이디 또는 이메일 입력"
+                  className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-white/20 focus:border-white/20 transition-all"
+                  placeholder="Enter username or email"
                   required
                 />
               </div>
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
-                비밀번호
+              <label htmlFor="password" className="block text-xs font-medium text-gray-400 mb-3 uppercase tracking-wider">
+                Password
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500" />
+                <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
                 <input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-10 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="비밀번호 입력"
+                  className="w-full pl-12 pr-12 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-white/20 focus:border-white/20 transition-all"
+                  placeholder="Enter password"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-300"
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-300 transition-colors"
                 >
                   {showPassword ? (
-                    <EyeOff className="h-5 w-5" />
+                    <EyeOff className="h-4 w-4" />
                   ) : (
-                    <Eye className="h-5 w-5" />
+                    <Eye className="h-4 w-4" />
                   )}
                 </button>
               </div>
             </div>
 
             {error && (
-              <div className="bg-red-900/50 border border-red-700 text-red-300 px-4 py-3 rounded-lg text-sm">
+              <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-xl text-sm">
                 {error}
               </div>
             )}
@@ -124,76 +122,69 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full flex justify-center items-center py-4 px-6 border border-transparent rounded-xl shadow-lg text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-[1.02]"
             >
               {loading ? (
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
               ) : (
                 <>
-                  <LogIn className="mr-2 h-5 w-5" />
-                  로그인
+                  <LogIn className="mr-2 h-4 w-4" />
+                  Sign In
                 </>
               )}
             </button>
           </form>
 
           {/* 개발용 테스트 계정 정보 */}
-          <div className="mt-6 pt-6 border-t border-gray-700">
+          <div className="mt-8 pt-8 border-t border-white/10">
             <button
               type="button"
               onClick={() => setShowDefaultAccounts(!showDefaultAccounts)}
-              className="flex items-center text-sm text-gray-400 hover:text-gray-300 transition-colors"
+              className="flex items-center text-xs text-gray-500 hover:text-gray-300 transition-colors"
             >
-              <Info className="mr-1 h-4 w-4" />
-              테스트 계정 정보
+              <Info className="mr-2 h-3 w-3" />
+              Test Accounts
             </button>
 
             {showDefaultAccounts && (
               <div className="mt-4 space-y-2">
-                <p className="text-xs text-gray-500 mb-3">
-                  아래 계정을 클릭하면 자동으로 입력됩니다
+                <p className="text-xs text-gray-600 mb-3">
+                  Click to auto-fill credentials
                 </p>
                 {defaultAccounts.map((account) => (
                   <button
                     key={account.username}
                     type="button"
                     onClick={() => fillCredentials(account.username, account.password)}
-                    className="w-full text-left p-3 bg-gray-700/50 hover:bg-gray-700 rounded-lg transition-colors group"
+                    className="w-full text-left p-3 bg-white/5 hover:bg-white/10 rounded-lg transition-all group"
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
-                        <span className={`inline-block px-2 py-1 text-xs font-medium text-white rounded ${account.badge}`}>
+                        <span className={`inline-block px-2 py-1 text-xs font-medium text-white rounded-md ${account.badge} bg-opacity-80`}>
                           {account.role}
                         </span>
                         <div>
                           <p className="text-sm text-gray-300 font-medium">
                             {account.username}
                           </p>
-                          <p className="text-xs text-gray-500">
+                          <p className="text-xs text-gray-600">
                             {account.password}
                           </p>
                         </div>
                       </div>
-                      <span className="text-gray-500 group-hover:text-gray-300 text-xs">
-                        클릭
+                      <span className="text-gray-600 group-hover:text-gray-400 text-xs">
+                        →
                       </span>
                     </div>
                   </button>
                 ))}
-                <div className="mt-3 p-3 bg-yellow-900/30 border border-yellow-700/50 rounded-lg">
-                  <p className="text-xs text-yellow-400">
-                    ⚠️ 프로덕션 환경에서는 반드시 비밀번호를 변경하세요!
+                <div className="mt-3 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+                  <p className="text-xs text-yellow-500">
+                    ⚠️ For development only
                   </p>
                 </div>
               </div>
             )}
-          </div>
-
-          <div className="mt-6 text-center">
-            <p className="text-xs text-gray-500">
-              초기 설정이 필요한 경우 <br />
-              <code className="text-yellow-400">node scripts/setup-admin.js</code> 실행
-            </p>
           </div>
         </div>
       </div>
