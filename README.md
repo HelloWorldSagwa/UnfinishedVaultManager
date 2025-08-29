@@ -1,36 +1,238 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# UnfinishedVault Admin Dashboard
 
-## Getting Started
+A comprehensive administrative dashboard for managing the UnfinishedVault creative collaboration platform. This Next.js application provides powerful tools for platform administrators to manage users, works, contributions, and generate test data.
 
-First, run the development server:
+## 🌟 Features
 
+### 📊 Dashboard Analytics
+- Real-time statistics overview
+- User activity tracking
+- Growth metrics and charts
+- Category distribution analytics
+
+### 👥 User Management
+- View and manage all user accounts
+- Change user roles (User/Admin)
+- Update user status (Active/Inactive/Suspended/Deleted)
+- User activity monitoring
+
+### 📝 Content Management
+- View and manage all works
+- Toggle work visibility (Public/Private)
+- Monitor completion rates and engagement
+- Delete inappropriate content
+
+### 🔧 Development Tools
+- **Dummy Data Generator**: Create realistic test data
+- Multiple content categories (Poetry, Novels, Essays, Scenarios)
+- Automatic contribution generation
+- Bulk data operations
+
+### 🎨 Modern UI/UX
+- Dark/Light theme toggle
+- Responsive design for all devices
+- Collapsible sidebar navigation
+- Sortable and searchable tables
+- Real-time data updates
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Node.js 18+ 
+- npm/yarn/pnpm
+- Supabase account and project
+
+### Installation
+
+1. **Clone and setup**
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone <repository-url>
+cd ManageUnfinishedVault
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. **Configure Environment Variables**
+Create `.env.local` file:
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://qmmryvzwzzlirvznbexp.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key_here
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. **Database Setup**
+Ensure your Supabase database has the required tables and an admin user:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```sql
+-- Add admin role to profiles table
+ALTER TABLE profiles ADD COLUMN role TEXT DEFAULT 'user';
 
-## Learn More
+-- Create an admin user
+UPDATE profiles 
+SET role = 'admin' 
+WHERE email = 'your-admin-email@example.com';
+```
 
-To learn more about Next.js, take a look at the following resources:
+4. **Start Development Server**
+```bash
+npm run dev
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Visit `http://localhost:3000` - you'll be redirected to the login page.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🗂️ Project Structure
 
-## Deploy on Vercel
+```
+src/
+├── app/
+│   ├── (auth)/
+│   │   └── login/                 # Authentication pages
+│   ├── (dashboard)/
+│   │   └── dashboard/             # Protected admin pages
+│   │       ├── page.tsx           # Analytics dashboard
+│   │       ├── works/             # Works management
+│   │       ├── users/             # User management
+│   │       └── dummy-data/        # Data generation tools
+│   ├── layout.tsx                 # Root layout
+│   └── page.tsx                   # Root redirect
+├── components/
+│   ├── ui/                        # Reusable UI components
+│   │   ├── data-table.tsx         # Sortable data table
+│   │   └── stat-card.tsx          # Statistics cards
+│   └── layout/
+│       └── sidebar.tsx            # Navigation sidebar
+├── lib/
+│   └── supabase/                  # Supabase configuration
+│       ├── client.ts              # Client-side config
+│       ├── server.ts              # Server-side config
+│       └── middleware.ts          # Auth middleware
+└── types/
+    └── database.ts                # TypeScript definitions
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🔐 Authentication & Security
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Admin Access Requirements
+- Valid Supabase account
+- `role='admin'` in the `profiles` table
+- `status='active'` account status
+
+### Security Features
+- Route protection with middleware
+- Admin role verification
+- Secure headers configuration
+- CSRF protection
+- No search engine indexing
+
+## 📊 Database Schema
+
+The dashboard works with the following key tables:
+
+### Core Tables
+- `profiles` - User accounts and roles
+- `works` - Creative works/posts
+- `contributions` - Collaborative additions to works
+- `likes` - User likes on works/contributions
+- `bookmarks` - User bookmarks
+- `notifications` - System notifications
+
+### Statistics Views
+- Real-time analytics
+- Growth tracking
+- Category breakdowns
+- User engagement metrics
+
+## 🛠️ Development
+
+### Available Scripts
+```bash
+npm run dev          # Start development server
+npm run build        # Build for production  
+npm run start        # Start production server
+```
+
+### Key Technologies
+- **Next.js 15** - React framework with App Router
+- **TypeScript** - Type safety
+- **Tailwind CSS** - Styling system
+- **Supabase** - Backend and authentication
+- **Recharts** - Data visualization
+- **Lucide React** - Icon system
+
+## 🚀 Deployment
+
+### Vercel (Recommended)
+
+1. **Connect Repository**
+   - Import project to Vercel
+   - Connect your Git repository
+
+2. **Configure Environment Variables**
+   ```env
+   NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+   ```
+
+3. **Deploy**
+   - Automatic deployment on push
+   - Preview deployments for PRs
+
+### Manual Deployment
+
+```bash
+npm run build
+npm run start
+```
+
+## 🔧 Configuration
+
+### Environment Variables
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL | Yes |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anonymous key | Yes |
+
+### Next.js Configuration
+- Optimized package imports
+- Security headers
+- Image optimization
+- Automatic redirects
+
+## 📖 Usage Guide
+
+### First Time Setup
+1. Deploy the application
+2. Create an admin account in Supabase
+3. Set user role to 'admin' in the profiles table
+4. Login to the dashboard
+
+### Managing Content
+- **Works**: View, edit visibility, monitor engagement
+- **Users**: Manage roles and account status  
+- **Data**: Generate test content for development
+
+### Analytics
+- Monitor user growth and activity
+- Track content creation trends
+- View engagement metrics
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+## 📄 License
+
+This project is part of the UnfinishedVault platform - contact the development team for licensing information.
+
+## 🆘 Support
+
+For technical support or questions:
+- Check existing issues
+- Create new issue with detailed description
+- Contact the UnfinishedVault development team
+
+---
+
+**Built with ❤️ for the UnfinishedVault community**
