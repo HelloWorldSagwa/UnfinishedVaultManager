@@ -16,11 +16,14 @@ export default function LoginPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
+    console.log('Login attempt:', { username, password })
     setLoading(true)
     setError('')
 
     try {
+      console.log('Calling adminAuth.login...')
       const result = await adminAuth.login(username, password)
+      console.log('Login result:', result)
 
       if (!result.success) {
         setError(result.message)
