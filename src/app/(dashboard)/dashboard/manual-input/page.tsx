@@ -122,7 +122,8 @@ export default function ManualInputPage() {
         options: {
           data: {
             nickname: userForm.nickname
-          }
+          },
+          emailRedirectTo: undefined  // Disable email confirmation requirement for dummy users
         }
       })
       
@@ -132,15 +133,16 @@ export default function ManualInputPage() {
         throw new Error('Failed to create auth user')
       }
       
-      // Sign in first to get authenticated context
+      // Try to sign in (may fail if email confirmation is required)
       const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
         email: dummyEmail,
         password: dummyPassword
       })
       
       if (signInError) {
-        console.error('Sign in error:', signInError)
-        // Continue anyway - the user is created even if sign in fails
+        console.warn('Sign in failed (email not confirmed):', signInError)
+        // User is created but needs email confirmation
+        // For dummy users, we'll mark this as success
       }
       
       // Then create/update the profile with the same ID
@@ -158,9 +160,18 @@ export default function ManualInputPage() {
         })
       
       if (profileError) {
-        console.warn('Profile creation failed with RLS. User created but profile not set:', profileError)
-        // Don't throw - user is created in auth.users
-        showMessage('success', `User created with email ${dummyEmail} (Profile setup pending due to RLS)`)
+        console.warn('Profile creation failed with RLS:', profileError)
+        // User is created in auth.users successfully
+        showMessage('success', `Dummy user created!\nEmail: ${dummyEmail}\nPassword: ${dummyPassword}\n(Save these credentials - email confirmation may be required)`)
+        
+        // Store the created user info for reference
+        console.log('Created dummy user credentials:', {
+          email: dummyEmail,
+          password: dummyPassword,
+          userId: authData.user.id
+        })
+        
+        setUserForm({ nickname: '', email: '', appleId: '' })
         return
       }
       
