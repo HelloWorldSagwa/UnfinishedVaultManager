@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import DataTable, { Column } from '@/components/ui/data-table'
 import { Work } from '@/types/database'
-import { Eye, Edit, Trash2, Plus, ExternalLink } from 'lucide-react'
+import { Eye, Trash2, Plus } from 'lucide-react'
 import { format } from 'date-fns'
 
 export default function WorksManagementPage() {
@@ -75,14 +75,17 @@ export default function WorksManagementPage() {
       header: 'Title',
       sortable: true,
       render: (value, work) => (
-        <div>
-          <div className="font-medium text-gray-900 dark:text-white truncate max-w-xs" title={value}>
+        <a 
+          href={`/dashboard/works/${work.id}`}
+          className="block hover:opacity-80 transition-opacity"
+        >
+          <div className="font-medium text-blue-600 dark:text-blue-400 truncate max-w-xs hover:underline" title={value}>
             {value}
           </div>
           <div className="text-sm text-gray-500 dark:text-gray-400">
             {work.category}
           </div>
-        </div>
+        </a>
       )
     },
     {
@@ -170,18 +173,13 @@ export default function WorksManagementPage() {
       header: 'Actions',
       render: (value, work) => (
         <div className="flex items-center space-x-2">
-          <button
+          <a
+            href={`/dashboard/works/${work.id}`}
             className="p-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
             title="View Details"
           >
             <Eye className="w-4 h-4" />
-          </button>
-          <button
-            className="p-1 text-yellow-600 hover:text-yellow-800 dark:text-yellow-400 dark:hover:text-yellow-300"
-            title="Edit"
-          >
-            <Edit className="w-4 h-4" />
-          </button>
+          </a>
           <button
             onClick={() => handleDelete(work.id)}
             className="p-1 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"

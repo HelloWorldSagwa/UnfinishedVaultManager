@@ -7,8 +7,6 @@ import {
   Home, 
   FileText, 
   Users, 
-  Database, 
-  Settings, 
   Menu, 
   X, 
   LogOut,
@@ -34,7 +32,6 @@ export default function Sidebar({ isDark, toggleTheme }: SidebarProps) {
     { name: 'Works Management', href: '/dashboard/works', icon: FileText },
     { name: 'Users Management', href: '/dashboard/users', icon: Users },
     { name: 'Manual Input', href: '/dashboard/manual-input', icon: PlusCircle },
-    { name: 'Dummy Data Generator', href: '/dashboard/dummy-data', icon: Database },
   ]
 
   const handleLogout = async () => {
