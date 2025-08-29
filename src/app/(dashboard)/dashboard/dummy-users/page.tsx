@@ -60,15 +60,32 @@ export default function DummyUsersPage() {
     
     setCreating(true)
     try {
-      const userId = crypto.randomUUID()
       // Generate unique email with timestamp to avoid duplicates
       const timestamp = Date.now()
       const dummyEmail = newUser.email || `${newUser.nickname.toLowerCase().replace(/\s+/g, '')}_${timestamp}@example.com`
       
-      const { error } = await supabase
+      // First, create a user in auth.users using Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: dummyEmail,
+        password: `DummyPass${timestamp}!`, // Generate a secure dummy password
+        options: {
+          data: {
+            nickname: newUser.nickname
+          }
+        }
+      })
+      
+      if (authError) throw authError
+      
+      if (!authData.user) {
+        throw new Error('Failed to create auth user')
+      }
+      
+      // Then create/update the profile with the same ID
+      const { error: profileError } = await supabase
         .from('profiles')
-        .insert({
-          id: userId,
+        .upsert({
+          id: authData.user.id,
           nickname: newUser.nickname,
           email: dummyEmail,
           apple_id: newUser.appleId || null,
@@ -77,7 +94,7 @@ export default function DummyUsersPage() {
           updated_at: new Date().toISOString()
         })
       
-      if (error) throw error
+      if (profileError) throw profileError
       
       showMessage('success', `Dummy user "${newUser.nickname}" created successfully`)
       setNewUser({ nickname: '', email: '', appleId: '' })
@@ -85,8 +102,10 @@ export default function DummyUsersPage() {
     } catch (error: any) {
       console.error('Error creating dummy user:', error)
       // Handle duplicate email error specifically
-      if (error.code === '23505' || error.message?.includes('duplicate')) {
+      if (error.code === '23505' || error.message?.includes('duplicate') || error.message?.includes('already registered')) {
         showMessage('error', 'A user with this email already exists. Please use a different email.')
+      } else if (error.code === '23503') {
+        showMessage('error', 'Failed to create user profile. Please try again.')
       } else {
         showMessage('error', error.message || 'Failed to create dummy user')
       }
